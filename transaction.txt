@@ -1,0 +1,61 @@
+const session = db.getMongo().startSession();
+
+try {
+  session.startTransaction();
+
+  const senderId = ObjectId("234grg53b53b4");
+  const recipientId = ObjectId("34r324in4jn52");
+  const amount = 1000;
+
+  // 1. Add refund to sender
+  db.users.updateOne(
+    { _id: senderId },
+    { $inc: { balance: amount } },
+    { session }
+  );
+
+  // 2. Subtract from recipient
+  const recipient = db.users.findOne({ _id: recipientId });
+
+  if (!recipient || recipient.balance < amount) {
+    throw new Error("Insufficient balance for refund");
+  }
+
+  db.users.updateOne(
+    { _id: recipientId },
+    { $inc: { balance: -amount } },
+    { session }
+  );
+
+  // 3. Update original transaction
+  db.transactions.updateOne(
+    {
+      from: senderId,
+      to: recipientId
+    },
+    {
+      $set: { status: "refunded" } // ❌ you forgot quotes
+    },
+    { session }
+  );
+
+  // 4. Insert refund record
+  db.transactions.insertOne(
+    {
+      from: recipientId,   // reversed
+      to: senderId,
+      amount: amount,
+      type: "refund",
+      date: new Date()
+    },
+    { session }
+  );
+
+  session.commitTransaction();
+
+} catch (e) {
+  session.abortTransaction();
+  throw e;
+} finally {
+  session.endSession();
+}
