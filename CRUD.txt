@@ -1,0 +1,115 @@
+//inserting operation is odne by insertOne
+db.products.insertOne({
+    name : "Wireless Headphones",
+    category : "Electronics",
+    price : {value : 99.9, currency : "USD"},
+    stock : 50,
+    ratings : [4.5, 4.7, 4.9]
+});
+
+//find operation of all electronics in stock
+db.products.find({
+    category : "Electronics",
+    stock : {$gt : 0},
+})
+
+// project only name and prices 
+db.products.find(
+    {category : "Electronics"},
+    {name : 1, prices : 1, _id = 0}
+)
+
+
+//sorting highest price first
+db.products.find().sort({"price.value" : -1});
+
+//increment stock by 10
+db.products.updateOne(
+    {_id = ObjectId("...")},
+    { $inc : {stock : 10}}
+);
+
+
+//update stock quantity for a products
+db.product.updateOne(
+    { name : "...." },
+    { $set : {stock : 45}}
+);
+
+//add a new field
+db.products.updateOne(
+    { name : "...."},
+    { $set : {"prices.discount" : 10}}
+);
+
+//new product schema
+{  
+  _id: ObjectId("665f4d7e8b3e6c1e24a7b3e1"),  
+  name: "Smartwatch Pro",  
+  category: "Wearables",  
+  price: { value: 199.99, currency: "USD", discount: 20 },  
+  stock: 25,  
+  ratings: [4.6, 4.8],  
+  tags: ["fitness", "bluetooth"]  
+}  
+
+// insert a new product in this
+db.products.insertOne({
+    name : "Meta Glasses",
+    category : "Wearables",
+    price : {value :2000.00, currency: "USD",discount : 10},
+    stock : 10,
+    ratings : [4.7],
+    tags : ["bluetooth","stylish"]
+}); 
+
+//find all tv under 600 dollars
+db.products.find({
+  category: "Electronics",
+  name: /TV/i,
+  "price.value": { $lt: 600 },
+  "price.currency": "USD"
+});
+
+//Delete a Discontinued Product
+db.products.deleteOne({  
+  name: "Legacy DVD Player"  
+});  
+
+
+// Reduce stock by 1 when purchased  
+db.products.updateOne(  
+  { _id: ObjectId("665f4d7e8b3e6c1e24a7b3e2") },  
+  { $inc: { stock: -1 } }  
+);  
+
+//challenges
+//add a new vegan dish
+db.FastBite.insertOne({
+    name : "Tofu Buddha Bowl",
+    cuisine : "Asian",
+    price : 9.50,
+    tags : ["vegan", "gluten-free"],
+    avalaible : true
+});
+
+//find all vegan dishes under $12, show name and price
+db.FastBite.find(
+    {tags : {$in : ["vegan"]},
+    price : {$lt : 12},
+    avalaible : true},
+    {name : 1, price : 1, _id : 0}
+);
+
+//Update the price of Tofu Buddha Bowl to $10.00 and add a “popular" tag
+
+db.FastBite.updateOne(
+    {name : "Tofu Buddha Bowl"},
+    {$set : {price : 10.0},
+    $push : {tags : "popular"}}
+);
+
+//Delete the old dish "Old Special Soup"
+db.FastBite.deleteOne({
+    name : "Old Special Soup"
+});
